@@ -1,0 +1,39 @@
+A newbie's technical review and mods for a Masterbuilt MES smoker
+
+We are new to the world of food smokers, so my wife strongly suggested that a budget of only $200 would be appropriate. I chose the Masterbuilt MES 130B electric, which was $184 from Amazon and was delivered for free in two days.
+
+My bottom line: it works ok. We've made some great meals with it. But as an engineer I have a few quibbles, some of which I can have fun fixing. Forgive me if this is all obvious to you experienced smokers.
+
+(1) Opening the door every 30-60 minutes to check the internal food temperature really disrupts the cooking. 
+
+(2) The chips are heated in a small tray over the heating element, so when the thermostat turns off the heater to let the temperature gradually come down, smoke generation diminishes and then stops until the heater turns on again.
+
+(3) The smoker has a large thermal mass, so their simple thermostat-like control ("heater off when the temperature goes above the set point, on when it goes below") results in huge overshoot and undershoot, by 10-15 degrees in each direction, with a cycle time of about 15 minutes. 
+
+(4) The display is all but unreadable in sunlight. 
+
+Being a tinkerer, I can't resist thinking about causes and fixes for each of these:
+
+(1) Problem solved by using an Enzoo 4-probe temperature sensor with thin wires that can go past the gasket on the door. No need to build anything here.
+
+(2) Problem solved by putting a couple of small 100W heating elements (wired in series, so 50W power dissipation) in the bottom of the chip tray, and turning them on periodically whenever the main heating element is off. To do that I tapped into their 4-wire controller cable (ground, 5VDC power, heater on, and temperature sense) and connected a little circuit with a small solid-state relay that controls power to the additional heating elements. For design details and photos see www.shustek.com/github/smoker_mods. It seems to work well. Lots of smoke almost all the time.
+
+(3) One common solution to feedback control for an inertial system is a PID controller, which I see many of you recommend as an add-on, wired into the 120 VAC heater power. Did Masterbuilt's engineer not understand PID? Maybe not; I looked at what is in their controller: a Zilog S3 8-bit processor that has only 4K of program memory, 208 bytes of registers, and no other read/write memory. It would be a challenge to implement a PID algorithm with that chip, in addition to what it's doing now. So why did they choose that chip? Because it's cheap: in quantities of 1000 it costs only 31 cents!
+
+(4) The story is similar for the display: their 4-digit 7-segment LED costs less than 40 cents. Something that works well in sunlight would cost a lot more.
+
+I'm thinking about four possible solutions to the temperature control problem (3). All would be compatible with the chip tray heater.
+
+(a) Discard the Masterbuilt controller and design my own. I'd use an Arduino-like processor good enough to implement a PID algorithm, and include an e-paper display visible in bright light, which also solves problem (4). I'm guessing the the parts bought new would cost about $50, but I have most of them already. No changes to the smoker's 120V wiring would be needed, since it just replaces the stock controller and plugs into the existing 4-wire cable coming out of the hole in the top. It would use the same temperature sensor, which incidentally isn't a thermocouple; it's an NTC (negative temperature coefficient) thermistor with a resistance of about 50K ohms at room temperature. (The advantage of a thermistor is that there is no reference junction temperature to deal with; the disadvantage is you have to correct for its non-linearity.)
+
+I wouldn't be entirely plowing new ground; here are two guys who experimented with building a Masterbuilt replacement controller:
+https://github.com/meyercm/masterbuilt_controller
+https://github.com/rshields9093/SmokerMC
+
+(b) Discard the Masterbuilt controller and use the inexpensive Japanese Berne Rex-C100 PID unit with a new thermocouple, and a big solid state relay with heatsink connected into the 120 VAC wiring of the unit. Others have posted about doing this. At least with the MES 130B that won't require drilling out rivets, as it apparently did with older models, because there is a screwed-on access plate in the back.
+
+(c) Discard the Masterbuilt controller and use the Rex-C100, but with a little interface circuit that controls the "heater on" signal that the original controller provided. That means no big relay, and no mucking around with the AC wiring inside the unit; just plug in the 4-wire connector that originally plugged into their controller.
+
+(d) See if I can reprogram the CPU in their controller and shoehorn in a PID algorithm. (I've been writing software for 50+ years and am pretty good at space optimization.) The CPU's memory is rewriteable without removing it from the board by using a auxiliary programmer that connect with 5 wires, and the Zilog S3 development tools (assembler, etc.) are available to anyone for free. It would be great if I discover that Masterbuilt didn't set the "hide program" bit, so I can read out and disassemble their program as a starting point. The advantage of this approach: no new hardware is needed. The disadvantage: reverse-engineering machine-language software is hard.
+
+Comments? I'll let you know which path I go down, if any.
