@@ -1,0 +1,10 @@
+Masterbuilt MES 130B to REX-C100 PID controller interface 
+printed circuit board parts list
+
+R1: 5.1K ohm 1/4 watt resistor
+R2: 3.3K ohm 1/4 watt resistor
+R3: 1K ohm 1/4 watt resistor
+D1: 1N4733 5.1 volt 1 watt zener diode
+4-pin single-row 0.1" spacing pin header
+2-pin 0.2" spacing PCB mount screw terminal connector
+3-pin 0.2" spacing PCB mount screw terminal connector (only needed for chip heater)
